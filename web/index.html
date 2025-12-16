@@ -125,28 +125,6 @@
       border-radius: 15px;
       margin-bottom: 20px;
     }
-    .voice-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 10px;
-    }
-    .voice-btn {
-      padding: 15px 10px;
-      background: #f9f9f9;
-      border: 3px solid #ddd;
-      border-radius: 15px;
-      color: #333;
-      cursor: pointer;
-      transition: all 0.2s;
-      font-family: 'Nunito', sans-serif;
-    }
-    .voice-btn:hover { border-color: #4DA6FF; transform: scale(1.02); }
-    .voice-btn.selected {
-      border-color: #4DA6FF;
-      background: #E3F2FD;
-    }
-    .voice-name { font-weight: 700; font-size: 1rem; }
-    .voice-desc { font-size: 0.8rem; color: #888; }
     .button-container {
       display: flex;
       justify-content: center;
@@ -185,12 +163,19 @@
     }
     .mascot {
       text-align: center;
-      font-size: 80px;
-      margin-bottom: 10px;
+      font-size: 120px;
+      margin: 20px 0;
       animation: bounce 2s ease-in-out infinite;
     }
     .mascot.talking {
       animation: talk 0.3s ease-in-out infinite;
+    }
+    .mascot.listening {
+      animation: listen 1s ease-in-out infinite;
+    }
+    @keyframes listen {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
     }
     @keyframes bounce {
       0%, 100% { transform: translateY(0); }
@@ -210,16 +195,6 @@
 
   <div class="mascot" id="mascot">🧸</div>
 
-  <div class="card" id="apiCard">
-    <label for="apiKey">Parent's API Key</label>
-    <input type="password" id="apiKey" placeholder="Enter Gemini API key">
-    <small style="color: #888;">Get one at <a href="https://aistudio.google.com/apikey" target="_blank" style="color: #4DA6FF;">aistudio.google.com/apikey</a></small>
-  </div>
-
-  <div class="card" id="voiceCard">
-    <label>Pick Teddy's Voice!</label>
-    <div class="voice-grid" id="voiceGrid"></div>
-  </div>
 
   <div id="status" class="status-idle">Tap to wake up Teddy!</div>
 
@@ -240,37 +215,19 @@
   </div>
 
   <script>
-    const VOICES = [
-      { name: 'Aoede', desc: 'Friendly' },
-      { name: 'Leda', desc: 'Fun' },
-      { name: 'Puck', desc: 'Silly' },
-      { name: 'Zephyr', desc: 'Cheerful' },
-      { name: 'Kore', desc: 'Kind' },
-      { name: 'Fenrir', desc: 'Excited' },
-    ];
-
+    // Load settings from parent page
     let selectedVoice = 'Aoede';
     let audioContext, mediaStream, processor, websocket;
     let isRunning = false;
     const mascot = document.getElementById('mascot');
 
-    // Populate voice grid
-    const voiceGrid = document.getElementById('voiceGrid');
-    VOICES.forEach((voice, i) => {
-      const btn = document.createElement('button');
-      btn.className = 'voice-btn' + (i === 0 ? ' selected' : '');
-      btn.innerHTML = `<div class="voice-name">${voice.name}</div><div class="voice-desc">${voice.desc}</div>`;
-      btn.onclick = () => {
-        document.querySelectorAll('.voice-btn').forEach(b => b.classList.remove('selected'));
-        btn.classList.add('selected');
-        selectedVoice = voice.name;
-      };
-      voiceGrid.appendChild(btn);
-    });
-
-    // Load saved API key
-    const savedKey = localStorage.getItem('gemini_api_key');
-    if (savedKey) document.getElementById('apiKey').value = savedKey;
+    // Load saved settings
+    const savedSettings = localStorage.getItem('tinytalk_settings');
+    if (savedSettings) {
+      const settings = JSON.parse(savedSettings);
+      selectedVoice = settings.voice || 'Aoede';
+    }
+    const apiKey = localStorage.getItem('gemini_api_key');
 
     // Audio visualizer
     const canvas = document.getElementById('visualizer');
@@ -320,13 +277,11 @@
     }
 
     window.startConversation = async function() {
-      const apiKey = document.getElementById('apiKey').value.trim();
       if (!apiKey) {
-        alert('Please ask a parent to enter the API key!');
+        setStatus('Ask a parent to set up Teddy!', 'error');
+        addMessage('Teddy needs to be set up first! Ask a parent to go to Settings.', 'system');
         return;
       }
-
-      localStorage.setItem('gemini_api_key', apiKey);
 
       document.getElementById('startBtn').disabled = true;
       document.getElementById('stopBtn').disabled = false;
@@ -369,6 +324,7 @@
           setStatus('Teddy is awake! Talk to him!', 'connected');
           addMessage('Teddy is waking up...', 'system');
           isRunning = true;
+          mascot.classList.add('listening');
 
           // Send setup message with Emily-focused system prompt
           const setupMsg = {
@@ -453,6 +409,7 @@ Start by saying: "Emily! Oh Emily! It's me, Teddy! I'm SO happy to see you! I mi
 
             // Handle audio response
             if (data.serverContent?.modelTurn?.parts) {
+              mascot.classList.remove('listening');
               mascot.classList.add('talking');
               for (const part of data.serverContent.modelTurn.parts) {
                 if (part.inlineData?.data) {
@@ -472,6 +429,7 @@ Start by saying: "Emily! Oh Emily! It's me, Teddy! I'm SO happy to see you! I mi
             // Handle turn complete
             if (data.serverContent?.turnComplete) {
               mascot.classList.remove('talking');
+              mascot.classList.add('listening');
             }
           } catch (err) {
             console.error('Message error:', err);
@@ -584,7 +542,7 @@ Start by saying: "Emily! Oh Emily! It's me, Teddy! I'm SO happy to see you! I mi
     window.stopConversation = function() {
       isRunning = false;
       scheduledTime = 0;
-      mascot.classList.remove('talking');
+      mascot.classList.remove('talking', 'listening');
 
       if (websocket) {
         websocket.close();
