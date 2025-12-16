@@ -3,549 +3,315 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>TinyTalk - Emily's Learning App!</title>
+  <title>Emily's TinyTalk</title>
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
-
     body {
       font-family: 'Nunito', sans-serif;
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
       background: linear-gradient(180deg, #FFF9E6 0%, #FFE4B5 100%);
       min-height: 100vh;
-      overflow: hidden;
-      touch-action: manipulation;
     }
-
-    .app {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: space-between;
-      min-height: 100vh;
-      padding: 20px;
-      max-width: 500px;
-      margin: 0 auto;
-    }
-
-    /* Header */
-    .header {
-      text-align: center;
-      padding: 10px 0;
-    }
-
-    .title {
-      font-size: 2.5rem;
-      font-weight: 900;
+    h1 {
       color: #FF6B9D;
-      text-shadow: 3px 3px 0 #FFB6C1;
-    }
-
-    /* Mascot */
-    .mascot-container {
-      position: relative;
-      width: 200px;
-      height: 200px;
-      margin: 10px 0;
-    }
-
-    .mascot {
-      width: 100%;
-      height: 100%;
-      font-size: 150px;
       text-align: center;
-      line-height: 200px;
+      font-size: 2.5rem;
+      text-shadow: 3px 3px 0 #FFB6C1;
+      margin-bottom: 10px;
+    }
+    .subtitle {
+      color: #666;
+      text-align: center;
+      margin-bottom: 20px;
+      font-size: 1.2rem;
+    }
+    .card {
+      background: white;
+      border-radius: 20px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+    }
+    label {
+      display: block;
+      margin-bottom: 8px;
+      color: #FF6B9D;
+      font-weight: 700;
+    }
+    input {
+      width: 100%;
+      padding: 15px;
+      border: 3px solid #ddd;
+      border-radius: 15px;
+      background: #fff;
+      color: #333;
+      font-size: 16px;
+      font-family: 'Nunito', sans-serif;
+      margin-bottom: 10px;
+    }
+    input:focus {
+      outline: none;
+      border-color: #4DA6FF;
+    }
+    button {
+      padding: 20px 40px;
+      font-size: 1.3rem;
+      border: none;
+      border-radius: 50px;
+      cursor: pointer;
+      margin-right: 10px;
+      margin-bottom: 10px;
+      transition: all 0.2s;
+      font-family: 'Nunito', sans-serif;
+      font-weight: 700;
+    }
+    .btn-primary {
+      background: linear-gradient(145deg, #4DA6FF, #2196F3);
+      color: white;
+      box-shadow: 0 8px 20px rgba(77, 166, 255, 0.4);
+    }
+    .btn-primary:hover {
+      transform: scale(1.05);
+      box-shadow: 0 10px 30px rgba(77, 166, 255, 0.5);
+    }
+    .btn-danger {
+      background: linear-gradient(145deg, #FF6B9D, #E91E63);
+      color: white;
+      box-shadow: 0 8px 20px rgba(255, 107, 157, 0.4);
+    }
+    .btn-danger:hover {
+      transform: scale(1.05);
+    }
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none !important;
+    }
+    #status {
+      padding: 20px;
+      border-radius: 15px;
+      margin-bottom: 20px;
+      font-weight: bold;
+      text-align: center;
+      font-size: 1.3rem;
+    }
+    .status-idle { background: #f0f0f0; color: #666; }
+    .status-connecting { background: #FFF3CD; color: #856404; }
+    .status-connected { background: #D4EDDA; color: #155724; }
+    .status-error { background: #F8D7DA; color: #721C24; }
+    #transcript {
+      background: #f9f9f9;
+      border-radius: 15px;
+      padding: 20px;
+      min-height: 150px;
+      max-height: 300px;
+      overflow-y: auto;
+      font-size: 1.1rem;
+      line-height: 1.6;
+    }
+    .user-msg { color: #4DA6FF; margin-bottom: 10px; }
+    .ai-msg { color: #4CAF50; margin-bottom: 10px; }
+    .system-msg { color: #888; font-style: italic; margin-bottom: 10px; }
+    #visualizer {
+      width: 100%;
+      height: 80px;
+      background: linear-gradient(145deg, #FFB6C1, #FF6B9D);
+      border-radius: 15px;
+      margin-bottom: 20px;
+    }
+    .voice-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+    .voice-btn {
+      padding: 15px 10px;
+      background: #f9f9f9;
+      border: 3px solid #ddd;
+      border-radius: 15px;
+      color: #333;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: 'Nunito', sans-serif;
+    }
+    .voice-btn:hover { border-color: #4DA6FF; transform: scale(1.02); }
+    .voice-btn.selected {
+      border-color: #4DA6FF;
+      background: #E3F2FD;
+    }
+    .voice-name { font-weight: 700; font-size: 1rem; }
+    .voice-desc { font-size: 0.8rem; color: #888; }
+    .button-container {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+    .settings-link {
+      text-align: center;
+      margin-top: 20px;
+    }
+    .settings-link a {
+      color: #888;
+      text-decoration: none;
+      font-size: 0.9rem;
+    }
+    .mascot {
+      text-align: center;
+      font-size: 80px;
+      margin-bottom: 10px;
       animation: bounce 2s ease-in-out infinite;
     }
-
     .mascot.talking {
       animation: talk 0.3s ease-in-out infinite;
     }
-
-    .mascot.listening {
-      animation: pulse 1s ease-in-out infinite;
-    }
-
     @keyframes bounce {
       0%, 100% { transform: translateY(0); }
       50% { transform: translateY(-10px); }
     }
-
     @keyframes talk {
       0%, 100% { transform: scale(1); }
       50% { transform: scale(1.1); }
     }
-
-    @keyframes pulse {
-      0%, 100% { transform: scale(1); opacity: 1; }
-      50% { transform: scale(1.05); opacity: 0.9; }
-    }
-
-    /* Word Display */
-    .word-display {
-      background: white;
-      border-radius: 30px;
-      padding: 20px 40px;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
-      text-align: center;
-      min-height: 100px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .word-label {
-      font-size: 1.2rem;
-      color: #888;
-      margin-bottom: 5px;
-    }
-
-    .current-word {
-      font-size: 3rem;
-      font-weight: 900;
-      color: #4DA6FF;
-    }
-
-    .word-emoji {
-      font-size: 4rem;
-      margin-top: 10px;
-    }
-
-    .status-message {
-      font-size: 1.5rem;
-      color: #666;
-      text-align: center;
-      min-height: 50px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    /* Main Button */
-    .talk-button {
-      width: 200px;
-      height: 200px;
-      border-radius: 50%;
-      border: none;
-      font-size: 5rem;
-      cursor: pointer;
-      transition: all 0.2s;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-      position: relative;
-      outline: none;
-      -webkit-tap-highlight-color: transparent;
-    }
-
-    .talk-button.ready {
-      background: linear-gradient(145deg, #4DA6FF, #2196F3);
-    }
-
-    .talk-button.listening {
-      background: linear-gradient(145deg, #FF6B9D, #E91E63);
-      animation: pulse-button 1s ease-in-out infinite;
-    }
-
-    .talk-button.speaking {
-      background: linear-gradient(145deg, #98FB98, #4CAF50);
-    }
-
-    .talk-button:active {
-      transform: scale(0.95);
-    }
-
-    @keyframes pulse-button {
-      0%, 100% { box-shadow: 0 10px 30px rgba(233, 30, 99, 0.4); }
-      50% { box-shadow: 0 10px 50px rgba(233, 30, 99, 0.6); }
-    }
-
-    /* Stars */
-    .stars-container {
-      display: flex;
-      gap: 10px;
-      padding: 10px;
-    }
-
-    .star {
-      font-size: 2.5rem;
-      opacity: 0.3;
-      transition: all 0.3s;
-    }
-
-    .star.earned {
-      opacity: 1;
-      animation: star-pop 0.5s ease-out;
-    }
-
-    @keyframes star-pop {
-      0% { transform: scale(0); }
-      50% { transform: scale(1.3); }
-      100% { transform: scale(1); }
-    }
-
-    /* Mode Buttons */
-    .mode-buttons {
-      display: flex;
-      gap: 15px;
-      flex-wrap: wrap;
-      justify-content: center;
-    }
-
-    .mode-btn {
-      padding: 15px 25px;
-      border-radius: 25px;
-      border: 3px solid #ddd;
-      background: white;
-      font-size: 1.2rem;
-      font-family: 'Nunito', sans-serif;
-      font-weight: 700;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-
-    .mode-btn.active {
-      border-color: #4DA6FF;
-      background: #E3F2FD;
-    }
-
-    .mode-btn:hover {
-      transform: scale(1.05);
-    }
-
-    /* Settings Button */
-    .settings-btn {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      width: 50px;
-      height: 50px;
-      border-radius: 50%;
-      border: none;
-      background: rgba(0,0,0,0.1);
-      font-size: 1.5rem;
-      cursor: pointer;
-      opacity: 0.5;
-    }
-
-    /* Timer */
-    .timer {
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      background: rgba(0,0,0,0.1);
-      padding: 10px 15px;
-      border-radius: 20px;
-      font-size: 1rem;
-      color: #666;
-    }
-
-    /* Hidden state */
-    .hidden {
-      display: none !important;
-    }
-
-    /* Celebration overlay */
-    .celebration {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(255,255,255,0.9);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      z-index: 100;
-    }
-
-    .celebration-text {
-      font-size: 3rem;
-      font-weight: 900;
-      color: #FF6B9D;
-      animation: celebrate 0.5s ease-in-out infinite alternate;
-    }
-
-    .celebration-emoji {
-      font-size: 6rem;
-      animation: spin 1s linear infinite;
-    }
-
-    @keyframes celebrate {
-      from { transform: scale(1) rotate(-5deg); }
-      to { transform: scale(1.1) rotate(5deg); }
-    }
-
-    @keyframes spin {
-      from { transform: rotate(0deg); }
-      to { transform: rotate(360deg); }
-    }
-
-    /* Confetti */
-    .confetti {
-      position: fixed;
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      animation: fall 3s linear forwards;
-    }
-
-    @keyframes fall {
-      to {
-        transform: translateY(100vh) rotate(720deg);
-        opacity: 0;
-      }
-    }
   </style>
 </head>
 <body>
-  <div class="app">
-    <div class="header">
-      <div class="title">Emily's TinyTalk</div>
-    </div>
+  <h1>Emily's TinyTalk</h1>
+  <p class="subtitle">Talk with your AI friend!</p>
 
-    <div class="mascot-container">
-      <div class="mascot" id="mascot">🐻</div>
-    </div>
+  <div class="mascot" id="mascot">🐻</div>
 
-    <div class="word-display" id="wordDisplay">
-      <div class="word-label">Emily, say this word:</div>
-      <div class="current-word" id="currentWord">DOG</div>
-      <div class="word-emoji" id="wordEmoji">🐕</div>
-    </div>
-
-    <div class="status-message" id="statusMessage">
-      Emily, tap the button to talk!
-    </div>
-
-    <button class="talk-button ready" id="talkButton" onclick="toggleTalk()">
-      🎤
-    </button>
-
-    <div class="stars-container" id="stars">
-      <span class="star">⭐</span>
-      <span class="star">⭐</span>
-      <span class="star">⭐</span>
-      <span class="star">⭐</span>
-      <span class="star">⭐</span>
-    </div>
-
-    <div class="mode-buttons">
-      <button class="mode-btn active" onclick="setMode('words')">📚 Words</button>
-      <button class="mode-btn" onclick="setMode('chat')">💬 Chat</button>
-      <button class="mode-btn" onclick="setMode('songs')">🎵 Songs</button>
-    </div>
+  <div class="card">
+    <label for="apiKey">Parent's API Key</label>
+    <input type="password" id="apiKey" placeholder="Enter Gemini API key">
+    <small style="color: #888;">Get one at <a href="https://aistudio.google.com/apikey" target="_blank" style="color: #4DA6FF;">aistudio.google.com/apikey</a></small>
   </div>
 
-  <div class="timer" id="timer">5:00</div>
-  <button class="settings-btn" onclick="openSettings()">⚙️</button>
+  <div class="card">
+    <label>Pick a Voice for Emily!</label>
+    <div class="voice-grid" id="voiceGrid"></div>
+  </div>
 
-  <div class="celebration hidden" id="celebration">
-    <div class="celebration-emoji">🎉</div>
-    <div class="celebration-text">YAY EMILY!</div>
+  <div id="status" class="status-idle">Tap Start to Talk!</div>
+
+  <canvas id="visualizer"></canvas>
+
+  <div class="button-container">
+    <button id="startBtn" class="btn-primary" onclick="startConversation()">🎤 Start Talking!</button>
+    <button id="stopBtn" class="btn-danger" onclick="stopConversation()" disabled>⏹ Stop</button>
+  </div>
+
+  <div class="card">
+    <label>What We're Saying</label>
+    <div id="transcript"><span class="system-msg">Hi Emily! Tap "Start Talking" to chat with me!</span></div>
+  </div>
+
+  <div class="settings-link">
+    <a href="parent.html">⚙️ Parent Settings</a>
   </div>
 
   <script>
-    // App State
-    let state = {
-      mode: 'words',
-      isConnected: false,
-      isListening: false,
-      isSpeaking: false,
-      stars: 0,
-      maxStars: 5,
-      sessionDuration: 300, // 5 minutes
-      timeRemaining: 300,
-      currentWord: null,
-      wordIndex: 0,
-      voice: 'Aoede',
-      wordCategory: 'animals'
-    };
+    const VOICES = [
+      { name: 'Aoede', desc: 'Friendly' },
+      { name: 'Leda', desc: 'Fun' },
+      { name: 'Puck', desc: 'Silly' },
+      { name: 'Zephyr', desc: 'Cheerful' },
+      { name: 'Kore', desc: 'Kind' },
+      { name: 'Fenrir', desc: 'Excited' },
+    ];
 
-    // Word lists with emojis
-    const WORDS = {
-      animals: [
-        { word: 'DOG', emoji: '🐕' },
-        { word: 'CAT', emoji: '🐱' },
-        { word: 'COW', emoji: '🐮' },
-        { word: 'PIG', emoji: '🐷' },
-        { word: 'DUCK', emoji: '🦆' },
-        { word: 'FISH', emoji: '🐟' },
-        { word: 'BIRD', emoji: '🐦' },
-        { word: 'BEAR', emoji: '🐻' },
-      ],
-      food: [
-        { word: 'APPLE', emoji: '🍎' },
-        { word: 'BANANA', emoji: '🍌' },
-        { word: 'MILK', emoji: '🥛' },
-        { word: 'COOKIE', emoji: '🍪' },
-        { word: 'BREAD', emoji: '🍞' },
-        { word: 'EGG', emoji: '🥚' },
-        { word: 'JUICE', emoji: '🧃' },
-      ],
-      things: [
-        { word: 'BALL', emoji: '⚽' },
-        { word: 'BOOK', emoji: '📖' },
-        { word: 'CAR', emoji: '🚗' },
-        { word: 'SHOE', emoji: '👟' },
-        { word: 'CUP', emoji: '🥤' },
-        { word: 'TOY', emoji: '🧸' },
-        { word: 'BED', emoji: '🛏️' },
-      ],
-      colors: [
-        { word: 'RED', emoji: '🔴' },
-        { word: 'BLUE', emoji: '🔵' },
-        { word: 'YELLOW', emoji: '🟡' },
-        { word: 'GREEN', emoji: '🟢' },
-      ]
-    };
-
-    // DOM Elements
+    let selectedVoice = 'Aoede';
+    let audioContext, mediaStream, processor, websocket;
+    let isRunning = false;
     const mascot = document.getElementById('mascot');
-    const talkButton = document.getElementById('talkButton');
-    const statusMessage = document.getElementById('statusMessage');
-    const currentWordEl = document.getElementById('currentWord');
-    const wordEmoji = document.getElementById('wordEmoji');
-    const wordDisplay = document.getElementById('wordDisplay');
-    const starsEl = document.getElementById('stars');
-    const timerEl = document.getElementById('timer');
-    const celebration = document.getElementById('celebration');
 
-    // Audio context and WebSocket
-    let audioContext, mediaStream, workletNode, websocket;
-    let playbackCtx = null;
-    let scheduledTime = 0;
-    const BUFFER_AHEAD = 0.1;
-    let audioWorkletSupported = true;
+    // Populate voice grid
+    const voiceGrid = document.getElementById('voiceGrid');
+    VOICES.forEach((voice, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'voice-btn' + (i === 0 ? ' selected' : '');
+      btn.innerHTML = `<div class="voice-name">${voice.name}</div><div class="voice-desc">${voice.desc}</div>`;
+      btn.onclick = () => {
+        document.querySelectorAll('.voice-btn').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        selectedVoice = voice.name;
+      };
+      voiceGrid.appendChild(btn);
+    });
 
-    // Initialize
-    function init() {
-      loadSettings();
-      updateWordDisplay();
-      updateStars();
-      updateTimer();
+    // Load saved API key
+    const savedKey = localStorage.getItem('gemini_api_key');
+    if (savedKey) document.getElementById('apiKey').value = savedKey;
 
-      // Load saved API key for direct connection (dev mode)
-      const savedKey = localStorage.getItem('gemini_api_key');
-      if (savedKey) {
-        state.apiKey = savedKey;
+    // Audio visualizer
+    const canvas = document.getElementById('visualizer');
+    const ctx = canvas.getContext('2d');
+    let analyser, dataArray;
+
+    function drawVisualizer() {
+      if (!analyser) return;
+      requestAnimationFrame(drawVisualizer);
+
+      analyser.getByteFrequencyData(dataArray);
+
+      // Kid-friendly rainbow colors
+      const gradient = ctx.createLinearGradient(0, 0, canvas.width, 0);
+      gradient.addColorStop(0, '#FF6B9D');
+      gradient.addColorStop(0.5, '#4DA6FF');
+      gradient.addColorStop(1, '#98FB98');
+
+      ctx.fillStyle = '#FFF9E6';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      const barWidth = canvas.width / dataArray.length * 2.5;
+      let x = 0;
+
+      for (let i = 0; i < dataArray.length; i++) {
+        const barHeight = (dataArray[i] / 255) * canvas.height;
+        const hue = (i / dataArray.length) * 60 + 320; // Pink to blue
+        ctx.fillStyle = `hsl(${hue}, 80%, 60%)`;
+        ctx.fillRect(x, canvas.height - barHeight, barWidth, barHeight);
+        x += barWidth + 1;
       }
     }
 
-    function loadSettings() {
-      const saved = localStorage.getItem('tinytalk_settings');
-      if (saved) {
-        const settings = JSON.parse(saved);
-        state.sessionDuration = settings.duration || 300;
-        state.timeRemaining = state.sessionDuration;
-        state.voice = settings.voice || 'Aoede';
-        state.wordCategory = settings.category || 'animals';
-      }
+    function setStatus(text, type) {
+      const status = document.getElementById('status');
+      status.textContent = text;
+      status.className = `status-${type}`;
     }
 
-    function setMode(mode) {
-      state.mode = mode;
-      document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
-      event.target.classList.add('active');
-
-      if (mode === 'words') {
-        wordDisplay.classList.remove('hidden');
-        updateWordDisplay();
-        statusMessage.textContent = 'Emily, say the word!';
-      } else if (mode === 'chat') {
-        wordDisplay.classList.add('hidden');
-        statusMessage.textContent = 'Emily, let\'s chat!';
-      } else if (mode === 'songs') {
-        wordDisplay.classList.add('hidden');
-        statusMessage.textContent = 'Emily, let\'s sing!';
-      }
+    function addMessage(text, type) {
+      const transcript = document.getElementById('transcript');
+      const msg = document.createElement('div');
+      msg.className = `${type}-msg`;
+      msg.textContent = text;
+      transcript.appendChild(msg);
+      transcript.scrollTop = transcript.scrollHeight;
     }
 
-    function updateWordDisplay() {
-      const words = WORDS[state.wordCategory] || WORDS.animals;
-      state.currentWord = words[state.wordIndex % words.length];
-      currentWordEl.textContent = state.currentWord.word;
-      wordEmoji.textContent = state.currentWord.emoji;
-    }
-
-    function nextWord() {
-      state.wordIndex++;
-      updateWordDisplay();
-    }
-
-    function updateStars() {
-      const starEls = starsEl.querySelectorAll('.star');
-      starEls.forEach((star, i) => {
-        if (i < state.stars) {
-          star.classList.add('earned');
-        } else {
-          star.classList.remove('earned');
-        }
-      });
-    }
-
-    function addStar() {
-      if (state.stars < state.maxStars) {
-        state.stars++;
-        updateStars();
-
-        if (state.stars === state.maxStars) {
-          celebrate();
-        }
-      }
-    }
-
-    function celebrate() {
-      celebration.classList.remove('hidden');
-
-      // Create confetti
-      for (let i = 0; i < 30; i++) {
-        const confetti = document.createElement('div');
-        confetti.className = 'confetti';
-        confetti.style.left = Math.random() * 100 + 'vw';
-        confetti.style.top = '-20px';
-        confetti.style.background = ['#FF6B9D', '#4DA6FF', '#98FB98', '#FFD700', '#FF6347'][Math.floor(Math.random() * 5)];
-        confetti.style.animationDelay = Math.random() * 2 + 's';
-        document.body.appendChild(confetti);
-
-        setTimeout(() => confetti.remove(), 3000);
+    window.startConversation = async function() {
+      const apiKey = document.getElementById('apiKey').value.trim();
+      if (!apiKey) {
+        alert('Please ask a parent to enter the API key!');
+        return;
       }
 
-      setTimeout(() => {
-        celebration.classList.add('hidden');
-        state.stars = 0;
-        updateStars();
-      }, 3000);
-    }
+      localStorage.setItem('gemini_api_key', apiKey);
 
-    function updateTimer() {
-      const mins = Math.floor(state.timeRemaining / 60);
-      const secs = state.timeRemaining % 60;
-      timerEl.textContent = `${mins}:${secs.toString().padStart(2, '0')}`;
-    }
+      document.getElementById('startBtn').disabled = true;
+      document.getElementById('stopBtn').disabled = false;
+      document.getElementById('transcript').innerHTML = '';
 
-    // Toggle talk button
-    async function toggleTalk() {
-      if (state.isListening) {
-        stopListening();
-      } else {
-        await startListening();
-      }
-    }
-
-    async function startListening() {
-      // Check for API key
-      if (!state.apiKey) {
-        const key = prompt('Enter your Gemini API key:');
-        if (!key) return;
-        state.apiKey = key;
-        localStorage.setItem('gemini_api_key', key);
-      }
+      setStatus('Connecting...', 'connecting');
+      addMessage('Connecting to your friend...', 'system');
 
       try {
-        state.isListening = true;
-        updateUI();
-
-        // Get microphone first (requires user gesture)
+        // Get microphone access
         mediaStream = await navigator.mediaDevices.getUserMedia({
           audio: {
             echoCancellation: true,
@@ -553,28 +319,33 @@
             sampleRate: 16000
           }
         });
-
-        // Create AudioContext after user gesture (required for mobile)
         audioContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 16000 });
 
-        // Resume audio context if suspended (mobile browsers)
+        // Resume if suspended (mobile)
         if (audioContext.state === 'suspended') {
           await audioContext.resume();
         }
 
-        // Connect to Gemini
+        // Set up audio analysis for visualizer
+        analyser = audioContext.createAnalyser();
+        analyser.fftSize = 256;
+        dataArray = new Uint8Array(analyser.frequencyBinCount);
+        const source = audioContext.createMediaStreamSource(mediaStream);
+        source.connect(analyser);
+        drawVisualizer();
+
+        // Connect to Gemini Live API via WebSocket
         const model = 'gemini-2.5-flash-native-audio-preview-12-2025';
-        const wsUrl = `wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1alpha.GenerativeService.BidiGenerateContent?key=${state.apiKey}`;
+        const wsUrl = `wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1alpha.GenerativeService.BidiGenerateContent?key=${apiKey}`;
 
         websocket = new WebSocket(wsUrl);
 
         websocket.onopen = () => {
-          state.isConnected = true;
-          statusMessage.textContent = 'Listening...';
+          setStatus('Connected - Talk to me Emily!', 'connected');
+          addMessage('Connected! Say hi Emily!', 'system');
+          isRunning = true;
 
-          // Get system prompt based on mode
-          let systemPrompt = getSystemPrompt();
-
+          // Send setup message with Emily-focused system prompt
           const setupMsg = {
             setup: {
               model: `models/${model}`,
@@ -583,64 +354,78 @@
                 speech_config: {
                   voice_config: {
                     prebuilt_voice_config: {
-                      voice_name: state.voice
+                      voice_name: selectedVoice
                     }
                   }
                 }
               },
               system_instruction: {
-                parts: [{ text: systemPrompt }]
+                parts: [{ text: `You are TinyTalk, a friendly and fun AI friend talking to a toddler named Emily.
+
+CRITICAL RULES:
+- Say "Emily" frequently in every response (2-3 times minimum)
+- Use very simple words (1-2 syllables preferred)
+- Speak slowly and clearly
+- Keep responses SHORT (under 20 words)
+- Be VERY enthusiastic and happy!
+- Use lots of praise: "Great job Emily!", "Wow Emily!", "Yay Emily!"
+- Ask simple questions: "Emily, do you like dogs?", "What's your favorite color Emily?"
+- Make animal sounds and silly noises
+- Never scold or criticize
+- If Emily is quiet, gently encourage: "Emily? Are you there? Say hi!"
+- Celebrate everything: "Emily you're so smart!", "I love talking to you Emily!"
+
+Start by saying "Hi Emily! I'm so happy to talk to you! How are you today Emily?"` }]
               }
             }
           };
           websocket.send(JSON.stringify(setupMsg));
+
+          // Start sending audio
           startAudioCapture();
         };
 
         websocket.onmessage = async (event) => {
           try {
             let data;
+
             if (event.data instanceof Blob) {
               const text = await event.data.text();
-              data = JSON.parse(text);
+              try {
+                data = JSON.parse(text);
+              } catch {
+                return;
+              }
             } else {
               data = JSON.parse(event.data);
             }
 
+            // Handle setup complete
             if (data.setupComplete) {
-              statusMessage.textContent = 'Emily, I\'m listening!';
+              addMessage('Ready! Talk to me Emily!', 'system');
             }
 
+            // Handle audio response
             if (data.serverContent?.modelTurn?.parts) {
-              state.isSpeaking = true;
               mascot.classList.add('talking');
-              mascot.classList.remove('listening');
-              talkButton.classList.remove('listening');
-              talkButton.classList.add('speaking');
-              talkButton.textContent = '🔊';
-
               for (const part of data.serverContent.modelTurn.parts) {
                 if (part.inlineData?.data) {
                   await playAudio(part.inlineData.data);
                 }
+                if (part.text) {
+                  addMessage(part.text, 'ai');
+                }
               }
             }
 
-            if (data.serverContent?.turnComplete) {
-              state.isSpeaking = false;
-              mascot.classList.remove('talking');
-              if (state.isListening) {
-                mascot.classList.add('listening');
-                talkButton.classList.add('listening');
-                talkButton.classList.remove('speaking');
-                talkButton.textContent = '🎤';
-              }
+            // Handle transcription
+            if (data.serverContent?.outputTranscription?.text) {
+              addMessage(data.serverContent.outputTranscription.text, 'ai');
+            }
 
-              // In word mode, award a star after each exchange
-              if (state.mode === 'words') {
-                addStar();
-                nextWord();
-              }
+            // Handle turn complete
+            if (data.serverContent?.turnComplete) {
+              mascot.classList.remove('talking');
             }
           } catch (err) {
             console.error('Message error:', err);
@@ -649,153 +434,34 @@
 
         websocket.onerror = (error) => {
           console.error('WebSocket error:', error);
-          statusMessage.textContent = 'Oops Emily! Try again!';
-          stopListening();
+          setStatus('Oops! Try again Emily!', 'error');
+          addMessage('Something went wrong - try again!', 'system');
         };
 
-        websocket.onclose = (event) => {
-          console.log('WebSocket closed:', event.code, event.reason);
-          if (state.isListening) {
-            stopListening();
-          }
+        websocket.onclose = () => {
+          setStatus('Bye bye! Tap Start to talk again!', 'idle');
+          addMessage('Bye Emily! Talk again soon!', 'system');
+          stopConversation();
         };
 
       } catch (error) {
-        console.error('Error starting:', error);
-        // Better error messages for common issues
+        console.error('Error:', error);
         if (error.name === 'NotAllowedError') {
-          statusMessage.textContent = 'Emily needs microphone permission!';
-        } else if (error.name === 'NotFoundError') {
-          statusMessage.textContent = 'No microphone found!';
-        } else if (error.message?.includes('API key')) {
-          statusMessage.textContent = 'Check API key in settings!';
+          setStatus('Need microphone permission!', 'error');
         } else {
-          statusMessage.textContent = 'Oops! Try again Emily!';
+          setStatus('Oops! Try again!', 'error');
         }
-        state.isListening = false;
-        stopListening();
-        updateUI();
+        addMessage('Error: ' + error.message, 'system');
+        stopConversation();
       }
-    }
+    };
 
-    function getSystemPrompt() {
-      const childName = 'Emily';
-      const basePrompt = `You are TinyTalk, a friendly speech teacher helping ${childName} learn to talk.
-
-CRITICAL - USE HER NAME:
-- Say "${childName}" frequently in every response
-- Examples: "Great job ${childName}!", "Can you say it ${childName}?", "Wow ${childName}!"
-- Use her name at least 2-3 times per response
-
-RULES:
-- Use very simple words (1-2 syllables)
-- Speak slowly and clearly
-- Keep responses under 20 words
-- Use lots of praise with her name: "Great job ${childName}!", "Wow ${childName}!", "${childName} did it!"
-- Never scold or criticize
-- Be patient and encouraging
-- Always sound excited and happy
-
-`;
-
-      if (state.mode === 'words') {
-        return basePrompt + `WORD TEACHING MODE:
-You are teaching ${childName} the word "${state.currentWord?.word || 'BALL'}".
-1. Say "${childName}! Can you say ${state.currentWord?.word || 'BALL'}? ${state.currentWord?.word || 'BALL'}. Say it ${childName}!"
-2. Wait for ${childName} to try
-3. Praise her attempt: "I heard you ${childName}! Good job!"
-4. Say "Yay ${childName}! ${state.currentWord?.word || 'BALL'}!"`;
-      } else if (state.mode === 'songs') {
-        return basePrompt + `SONG MODE:
-Sing simple songs with ${childName}.
-- Start with "${childName}, let's sing together!"
-- Sing Twinkle Twinkle, Old MacDonald, or Wheels on the Bus
-- Sing slowly with clear words
-- Say "${childName}, sing with me!" between verses
-- Celebrate: "Yay ${childName}! You're singing!"`;
-      } else {
-        return basePrompt + `CHAT MODE:
-Have a simple conversation with ${childName}.
-- Start with "Hi ${childName}! How are you?"
-- Ask about her things: "${childName}, do you have a doggy?"
-- Use her name in every response
-- Keep questions simple
-- Say things like "${childName}, that's so cool!" and "Tell me more ${childName}!"`;
-      }
-    }
-
-    async function startAudioCapture() {
-      try {
-        const source = audioContext.createMediaStreamSource(mediaStream);
-
-        // Try AudioWorklet first (modern approach), fallback to ScriptProcessor
-        if (window.AudioWorkletNode && audioWorkletSupported) {
-          try {
-            // Create inline worklet processor
-            const workletCode = `
-              class PCMProcessor extends AudioWorkletProcessor {
-                constructor() {
-                  super();
-                  this.buffer = [];
-                }
-                process(inputs, outputs, parameters) {
-                  const input = inputs[0];
-                  if (input && input[0]) {
-                    const samples = input[0];
-                    const pcmData = new Int16Array(samples.length);
-                    for (let i = 0; i < samples.length; i++) {
-                      pcmData[i] = Math.max(-32768, Math.min(32767, samples[i] * 32768));
-                    }
-                    this.port.postMessage(pcmData.buffer, [pcmData.buffer]);
-                  }
-                  return true;
-                }
-              }
-              registerProcessor('pcm-processor', PCMProcessor);
-            `;
-            const blob = new Blob([workletCode], { type: 'application/javascript' });
-            const workletUrl = URL.createObjectURL(blob);
-            await audioContext.audioWorklet.addModule(workletUrl);
-            URL.revokeObjectURL(workletUrl);
-
-            workletNode = new AudioWorkletNode(audioContext, 'pcm-processor');
-            workletNode.port.onmessage = (e) => {
-              if (!state.isListening || websocket?.readyState !== WebSocket.OPEN) return;
-              const pcmData = new Int16Array(e.data);
-              const base64Audio = arrayBufferToBase64(pcmData.buffer);
-              websocket.send(JSON.stringify({
-                realtimeInput: {
-                  mediaChunks: [{
-                    mimeType: 'audio/pcm',
-                    data: base64Audio
-                  }]
-                }
-              }));
-            };
-            source.connect(workletNode);
-            workletNode.connect(audioContext.destination);
-            console.log('Using AudioWorklet for audio capture');
-          } catch (workletError) {
-            console.warn('AudioWorklet failed, using fallback:', workletError);
-            audioWorkletSupported = false;
-            setupScriptProcessor(source);
-          }
-        } else {
-          setupScriptProcessor(source);
-        }
-      } catch (err) {
-        console.error('Audio capture setup error:', err);
-        statusMessage.textContent = 'Audio error. Try again!';
-        stopListening();
-      }
-    }
-
-    function setupScriptProcessor(source) {
-      // Fallback to ScriptProcessor (deprecated but wider support)
-      const processor = audioContext.createScriptProcessor(4096, 1, 1);
+    function startAudioCapture() {
+      const source = audioContext.createMediaStreamSource(mediaStream);
+      processor = audioContext.createScriptProcessor(4096, 1, 1);
 
       processor.onaudioprocess = (e) => {
-        if (!state.isListening || websocket?.readyState !== WebSocket.OPEN) return;
+        if (!isRunning || websocket?.readyState !== WebSocket.OPEN) return;
 
         const inputData = e.inputBuffer.getChannelData(0);
         const pcmData = new Int16Array(inputData.length);
@@ -804,7 +470,7 @@ Have a simple conversation with ${childName}.
           pcmData[i] = Math.max(-32768, Math.min(32767, inputData[i] * 32768));
         }
 
-        const base64Audio = arrayBufferToBase64(pcmData.buffer);
+        const base64Audio = btoa(String.fromCharCode(...new Uint8Array(pcmData.buffer)));
 
         websocket.send(JSON.stringify({
           realtimeInput: {
@@ -818,21 +484,12 @@ Have a simple conversation with ${childName}.
 
       source.connect(processor);
       processor.connect(audioContext.destination);
-      workletNode = processor; // Store reference for cleanup
-      console.log('Using ScriptProcessor for audio capture (fallback)');
     }
 
-    // Helper function for base64 encoding (more memory efficient)
-    function arrayBufferToBase64(buffer) {
-      const bytes = new Uint8Array(buffer);
-      let binary = '';
-      const chunkSize = 8192;
-      for (let i = 0; i < bytes.length; i += chunkSize) {
-        const chunk = bytes.subarray(i, i + chunkSize);
-        binary += String.fromCharCode.apply(null, chunk);
-      }
-      return btoa(binary);
-    }
+    // Audio playback
+    let playbackCtx = null;
+    let scheduledTime = 0;
+    const BUFFER_AHEAD = 0.1;
 
     async function playAudio(base64Data) {
       try {
@@ -841,7 +498,6 @@ Have a simple conversation with ${childName}.
           scheduledTime = playbackCtx.currentTime;
         }
 
-        // Resume if suspended (mobile browsers)
         if (playbackCtx.state === 'suspended') {
           await playbackCtx.resume();
         }
@@ -873,24 +529,25 @@ Have a simple conversation with ${childName}.
 
         source.start(scheduledTime);
         scheduledTime += audioBuffer.duration;
+
       } catch (err) {
-        console.error('Audio playback error:', err);
+        console.error('Audio error:', err);
       }
     }
 
-    function stopListening() {
-      state.isListening = false;
-      state.isConnected = false;
-      state.isSpeaking = false;
+    window.stopConversation = function() {
+      isRunning = false;
+      scheduledTime = 0;
+      mascot.classList.remove('talking');
 
       if (websocket) {
         websocket.close();
         websocket = null;
       }
 
-      if (workletNode) {
-        workletNode.disconnect();
-        workletNode = null;
+      if (processor) {
+        processor.disconnect();
+        processor = null;
       }
 
       if (mediaStream) {
@@ -908,45 +565,10 @@ Have a simple conversation with ${childName}.
         playbackCtx = null;
       }
 
-      scheduledTime = 0;
-      updateUI();
-    }
-
-    function updateUI() {
-      mascot.classList.remove('talking', 'listening');
-      talkButton.classList.remove('listening', 'speaking');
-
-      if (state.isListening) {
-        mascot.classList.add('listening');
-        talkButton.classList.add('listening');
-        talkButton.textContent = '🎤';
-        statusMessage.textContent = 'Listening to Emily...';
-      } else {
-        talkButton.classList.add('ready');
-        talkButton.textContent = '🎤';
-        statusMessage.textContent = 'Emily, tap the button to talk!';
-      }
-    }
-
-    function openSettings() {
-      window.location.href = 'parent.html';
-    }
-
-    // Timer countdown
-    setInterval(() => {
-      if (state.isListening && state.timeRemaining > 0) {
-        state.timeRemaining--;
-        updateTimer();
-
-        if (state.timeRemaining === 0) {
-          statusMessage.textContent = 'Great job Emily! Time for a break!';
-          stopListening();
-        }
-      }
-    }, 1000);
-
-    // Initialize app
-    init();
+      document.getElementById('startBtn').disabled = false;
+      document.getElementById('stopBtn').disabled = true;
+      setStatus('Tap Start to Talk!', 'idle');
+    };
   </script>
 </body>
 </html>
