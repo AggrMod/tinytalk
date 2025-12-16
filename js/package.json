@@ -1,0 +1,13 @@
+{
+  "name": "gemini-native-audio-test",
+  "version": "1.0.0",
+  "description": "Test Gemini 2.5 Flash Native Audio capabilities",
+  "type": "module",
+  "scripts": {
+    "audio": "node audio_test.js",
+    "live": "node live_audio.js"
+  },
+  "dependencies": {
+    "@google/genai": "^1.0.0"
+  }
+}

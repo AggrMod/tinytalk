@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TinyTalk - Parent Settings</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Nunito', sans-serif;
+      background: #f5f5f5;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      margin-bottom: 30px;
+    }
+
+    .back-btn {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      border: none;
+      background: #4DA6FF;
+      color: white;
+      font-size: 1.5rem;
+      cursor: pointer;
+    }
+
+    h1 {
+      font-size: 1.8rem;
+      color: #333;
+    }
+
+    .card {
+      background: white;
+      border-radius: 15px;
+      padding: 25px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    .card h2 {
+      font-size: 1.2rem;
+      color: #FF6B9D;
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      font-weight: 700;
+      color: #666;
+      margin-bottom: 8px;
+    }
+
+    input[type="text"],
+    input[type="password"],
+    input[type="number"],
+    select {
+      width: 100%;
+      padding: 12px 15px;
+      border: 2px solid #ddd;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-family: 'Nunito', sans-serif;
+    }
+
+    input:focus, select:focus {
+      outline: none;
+      border-color: #4DA6FF;
+    }
+
+    .btn {
+      padding: 15px 30px;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-family: 'Nunito', sans-serif;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-primary {
+      background: #4DA6FF;
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: #3d96ef;
+    }
+
+    .btn-danger {
+      background: #ff4d4d;
+      color: white;
+    }
+
+    .btn-success {
+      background: #4CAF50;
+      color: white;
+    }
+
+    .time-options {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+
+    .time-option {
+      padding: 15px;
+      border: 2px solid #ddd;
+      border-radius: 10px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .time-option:hover {
+      border-color: #4DA6FF;
+    }
+
+    .time-option.selected {
+      border-color: #4DA6FF;
+      background: #E3F2FD;
+    }
+
+    .time-option .mins {
+      font-size: 1.5rem;
+      font-weight: 900;
+      color: #4DA6FF;
+    }
+
+    .voice-options {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+
+    .voice-option {
+      padding: 15px;
+      border: 2px solid #ddd;
+      border-radius: 10px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .voice-option:hover {
+      border-color: #4DA6FF;
+    }
+
+    .voice-option.selected {
+      border-color: #4DA6FF;
+      background: #E3F2FD;
+    }
+
+    .voice-option .name {
+      font-weight: 700;
+      color: #333;
+    }
+
+    .voice-option .desc {
+      font-size: 0.8rem;
+      color: #888;
+    }
+
+    .category-options {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+
+    .category-option {
+      padding: 15px;
+      border: 2px solid #ddd;
+      border-radius: 10px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .category-option:hover {
+      border-color: #4DA6FF;
+    }
+
+    .category-option.selected {
+      border-color: #4DA6FF;
+      background: #E3F2FD;
+    }
+
+    .category-option .emoji {
+      font-size: 2rem;
+    }
+
+    .category-option .name {
+      font-weight: 700;
+      color: #333;
+      margin-top: 5px;
+    }
+
+    .pin-input {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+    }
+
+    .pin-digit {
+      width: 50px;
+      height: 60px;
+      text-align: center;
+      font-size: 1.5rem;
+      font-weight: 700;
+      border: 2px solid #ddd;
+      border-radius: 10px;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 15px;
+      text-align: center;
+    }
+
+    .stat {
+      padding: 15px;
+      background: #f9f9f9;
+      border-radius: 10px;
+    }
+
+    .stat .value {
+      font-size: 2rem;
+      font-weight: 900;
+      color: #4DA6FF;
+    }
+
+    .stat .label {
+      font-size: 0.9rem;
+      color: #888;
+    }
+
+    .warning {
+      background: #fff3cd;
+      border: 1px solid #ffc107;
+      border-radius: 10px;
+      padding: 15px;
+      margin-top: 15px;
+      color: #856404;
+    }
+
+    .success-msg {
+      background: #d4edda;
+      border: 1px solid #28a745;
+      border-radius: 10px;
+      padding: 15px;
+      margin-top: 15px;
+      color: #155724;
+      display: none;
+    }
+
+    .success-msg.show {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <button class="back-btn" onclick="goBack()">←</button>
+      <h1>Parent Settings</h1>
+    </div>
+
+    <!-- API Key -->
+    <div class="card">
+      <h2>🔑 API Key</h2>
+      <div class="form-group">
+        <label>Google Gemini API Key</label>
+        <input type="password" id="apiKey" placeholder="Enter your API key">
+        <small style="color: #888;">Get one at <a href="https://aistudio.google.com/apikey" target="_blank">aistudio.google.com/apikey</a></small>
+      </div>
+    </div>
+
+    <!-- Session Time -->
+    <div class="card">
+      <h2>⏰ Session Length</h2>
+      <p style="color: #888; margin-bottom: 15px;">How long can your child use TinyTalk?</p>
+      <div class="time-options">
+        <div class="time-option" data-duration="300" onclick="selectDuration(this)">
+          <div class="mins">5</div>
+          <div>minutes</div>
+        </div>
+        <div class="time-option selected" data-duration="600" onclick="selectDuration(this)">
+          <div class="mins">10</div>
+          <div>minutes</div>
+        </div>
+        <div class="time-option" data-duration="900" onclick="selectDuration(this)">
+          <div class="mins">15</div>
+          <div>minutes</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Voice Selection -->
+    <div class="card">
+      <h2>🗣️ Voice</h2>
+      <p style="color: #888; margin-bottom: 15px;">Choose a voice for TinyTalk</p>
+      <div class="voice-options">
+        <div class="voice-option selected" data-voice="Aoede" onclick="selectVoice(this)">
+          <div class="name">Aoede</div>
+          <div class="desc">Breezy, natural</div>
+        </div>
+        <div class="voice-option" data-voice="Leda" onclick="selectVoice(this)">
+          <div class="name">Leda</div>
+          <div class="desc">Youthful, energetic</div>
+        </div>
+        <div class="voice-option" data-voice="Puck" onclick="selectVoice(this)">
+          <div class="name">Puck</div>
+          <div class="desc">Upbeat, fun</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Word Category -->
+    <div class="card">
+      <h2>📚 Word Category</h2>
+      <p style="color: #888; margin-bottom: 15px;">What words should we practice?</p>
+      <div class="category-options">
+        <div class="category-option selected" data-category="animals" onclick="selectCategory(this)">
+          <div class="emoji">🐕</div>
+          <div class="name">Animals</div>
+        </div>
+        <div class="category-option" data-category="food" onclick="selectCategory(this)">
+          <div class="emoji">🍎</div>
+          <div class="name">Food</div>
+        </div>
+        <div class="category-option" data-category="things" onclick="selectCategory(this)">
+          <div class="emoji">⚽</div>
+          <div class="name">Things</div>
+        </div>
+        <div class="category-option" data-category="colors" onclick="selectCategory(this)">
+          <div class="emoji">🌈</div>
+          <div class="name">Colors</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Session Stats -->
+    <div class="card">
+      <h2>📊 Today's Progress</h2>
+      <div class="stats">
+        <div class="stat">
+          <div class="value" id="totalStars">0</div>
+          <div class="label">Stars Earned</div>
+        </div>
+        <div class="stat">
+          <div class="value" id="wordsLearned">0</div>
+          <div class="label">Words Practiced</div>
+        </div>
+        <div class="stat">
+          <div class="value" id="sessionTime">0</div>
+          <div class="label">Minutes Today</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PIN Protection -->
+    <div class="card">
+      <h2>🔒 Parent PIN</h2>
+      <p style="color: #888; margin-bottom: 15px;">Set a PIN to protect settings</p>
+      <div class="form-group">
+        <label>New PIN (4 digits)</label>
+        <input type="password" id="newPin" maxlength="4" placeholder="Enter 4-digit PIN">
+      </div>
+      <button class="btn btn-primary" onclick="savePin()">Set PIN</button>
+      <div class="warning" id="pinWarning" style="display: none;">
+        PIN must be exactly 4 digits
+      </div>
+    </div>
+
+    <!-- Save Button -->
+    <div style="text-align: center; margin: 30px 0;">
+      <button class="btn btn-success" onclick="saveSettings()" style="font-size: 1.2rem; padding: 20px 50px;">
+        💾 Save Settings
+      </button>
+      <div class="success-msg" id="successMsg">
+        ✓ Settings saved successfully!
+      </div>
+    </div>
+
+    <!-- Reset -->
+    <div class="card">
+      <h2>⚠️ Reset</h2>
+      <p style="color: #888; margin-bottom: 15px;">Clear all data and start fresh</p>
+      <button class="btn btn-danger" onclick="resetAll()">Reset Everything</button>
+    </div>
+  </div>
+
+  <script>
+    // State
+    let settings = {
+      duration: 600,
+      voice: 'Aoede',
+      category: 'animals',
+      pin: '1234'
+    };
+
+    let stats = {
+      stars: 0,
+      words: 0,
+      minutes: 0
+    };
+
+    // Load settings on page load
+    function loadSettings() {
+      const saved = localStorage.getItem('tinytalk_settings');
+      if (saved) {
+        settings = JSON.parse(saved);
+      }
+
+      const savedStats = localStorage.getItem('tinytalk_stats');
+      if (savedStats) {
+        stats = JSON.parse(savedStats);
+      }
+
+      const savedKey = localStorage.getItem('gemini_api_key');
+      if (savedKey) {
+        document.getElementById('apiKey').value = savedKey;
+      }
+
+      // Update UI
+      document.querySelectorAll('.time-option').forEach(el => {
+        el.classList.remove('selected');
+        if (parseInt(el.dataset.duration) === settings.duration) {
+          el.classList.add('selected');
+        }
+      });
+
+      document.querySelectorAll('.voice-option').forEach(el => {
+        el.classList.remove('selected');
+        if (el.dataset.voice === settings.voice) {
+          el.classList.add('selected');
+        }
+      });
+
+      document.querySelectorAll('.category-option').forEach(el => {
+        el.classList.remove('selected');
+        if (el.dataset.category === settings.category) {
+          el.classList.add('selected');
+        }
+      });
+
+      // Update stats
+      document.getElementById('totalStars').textContent = stats.stars;
+      document.getElementById('wordsLearned').textContent = stats.words;
+      document.getElementById('sessionTime').textContent = stats.minutes;
+    }
+
+    function selectDuration(el) {
+      document.querySelectorAll('.time-option').forEach(e => e.classList.remove('selected'));
+      el.classList.add('selected');
+      settings.duration = parseInt(el.dataset.duration);
+    }
+
+    function selectVoice(el) {
+      document.querySelectorAll('.voice-option').forEach(e => e.classList.remove('selected'));
+      el.classList.add('selected');
+      settings.voice = el.dataset.voice;
+    }
+
+    function selectCategory(el) {
+      document.querySelectorAll('.category-option').forEach(e => e.classList.remove('selected'));
+      el.classList.add('selected');
+      settings.category = el.dataset.category;
+    }
+
+    function savePin() {
+      const pin = document.getElementById('newPin').value;
+      if (pin.length !== 4 || !/^\d+$/.test(pin)) {
+        document.getElementById('pinWarning').style.display = 'block';
+        return;
+      }
+      document.getElementById('pinWarning').style.display = 'none';
+      settings.pin = pin;
+      alert('PIN updated!');
+    }
+
+    function saveSettings() {
+      // Save API key
+      const apiKey = document.getElementById('apiKey').value.trim();
+      if (apiKey) {
+        localStorage.setItem('gemini_api_key', apiKey);
+      }
+
+      // Save settings
+      localStorage.setItem('tinytalk_settings', JSON.stringify(settings));
+
+      // Show success
+      document.getElementById('successMsg').classList.add('show');
+      setTimeout(() => {
+        document.getElementById('successMsg').classList.remove('show');
+      }, 3000);
+    }
+
+    function resetAll() {
+      if (confirm('Are you sure? This will delete all settings and progress.')) {
+        localStorage.removeItem('tinytalk_settings');
+        localStorage.removeItem('tinytalk_stats');
+        localStorage.removeItem('gemini_api_key');
+        location.reload();
+      }
+    }
+
+    function goBack() {
+      window.location.href = '/';
+    }
+
+    // Initialize
+    loadSettings();
+  </script>
+</body>
+</html>

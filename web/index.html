@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>TinyTalk - Learn to Talk!</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Nunito', sans-serif;
+      background: linear-gradient(180deg, #FFF9E6 0%, #FFE4B5 100%);
+      min-height: 100vh;
+      overflow: hidden;
+      touch-action: manipulation;
+    }
+
+    .app {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 100vh;
+      padding: 20px;
+      max-width: 500px;
+      margin: 0 auto;
+    }
+
+    /* Header */
+    .header {
+      text-align: center;
+      padding: 10px 0;
+    }
+
+    .title {
+      font-size: 2.5rem;
+      font-weight: 900;
+      color: #FF6B9D;
+      text-shadow: 3px 3px 0 #FFB6C1;
+    }
+
+    /* Mascot */
+    .mascot-container {
+      position: relative;
+      width: 200px;
+      height: 200px;
+      margin: 10px 0;
+    }
+
+    .mascot {
+      width: 100%;
+      height: 100%;
+      font-size: 150px;
+      text-align: center;
+      line-height: 200px;
+      animation: bounce 2s ease-in-out infinite;
+    }
+
+    .mascot.talking {
+      animation: talk 0.3s ease-in-out infinite;
+    }
+
+    .mascot.listening {
+      animation: pulse 1s ease-in-out infinite;
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+
+    @keyframes talk {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.05); opacity: 0.9; }
+    }
+
+    /* Word Display */
+    .word-display {
+      background: white;
+      border-radius: 30px;
+      padding: 20px 40px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+      text-align: center;
+      min-height: 100px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .word-label {
+      font-size: 1.2rem;
+      color: #888;
+      margin-bottom: 5px;
+    }
+
+    .current-word {
+      font-size: 3rem;
+      font-weight: 900;
+      color: #4DA6FF;
+    }
+
+    .word-emoji {
+      font-size: 4rem;
+      margin-top: 10px;
+    }
+
+    .status-message {
+      font-size: 1.5rem;
+      color: #666;
+      text-align: center;
+      min-height: 50px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Main Button */
+    .talk-button {
+      width: 200px;
+      height: 200px;
+      border-radius: 50%;
+      border: none;
+      font-size: 5rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+      position: relative;
+      outline: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .talk-button.ready {
+      background: linear-gradient(145deg, #4DA6FF, #2196F3);
+    }
+
+    .talk-button.listening {
+      background: linear-gradient(145deg, #FF6B9D, #E91E63);
+      animation: pulse-button 1s ease-in-out infinite;
+    }
+
+    .talk-button.speaking {
+      background: linear-gradient(145deg, #98FB98, #4CAF50);
+    }
+
+    .talk-button:active {
+      transform: scale(0.95);
+    }
+
+    @keyframes pulse-button {
+      0%, 100% { box-shadow: 0 10px 30px rgba(233, 30, 99, 0.4); }
+      50% { box-shadow: 0 10px 50px rgba(233, 30, 99, 0.6); }
+    }
+
+    /* Stars */
+    .stars-container {
+      display: flex;
+      gap: 10px;
+      padding: 10px;
+    }
+
+    .star {
+      font-size: 2.5rem;
+      opacity: 0.3;
+      transition: all 0.3s;
+    }
+
+    .star.earned {
+      opacity: 1;
+      animation: star-pop 0.5s ease-out;
+    }
+
+    @keyframes star-pop {
+      0% { transform: scale(0); }
+      50% { transform: scale(1.3); }
+      100% { transform: scale(1); }
+    }
+
+    /* Mode Buttons */
+    .mode-buttons {
+      display: flex;
+      gap: 15px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .mode-btn {
+      padding: 15px 25px;
+      border-radius: 25px;
+      border: 3px solid #ddd;
+      background: white;
+      font-size: 1.2rem;
+      font-family: 'Nunito', sans-serif;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .mode-btn.active {
+      border-color: #4DA6FF;
+      background: #E3F2FD;
+    }
+
+    .mode-btn:hover {
+      transform: scale(1.05);
+    }
+
+    /* Settings Button */
+    .settings-btn {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      border: none;
+      background: rgba(0,0,0,0.1);
+      font-size: 1.5rem;
+      cursor: pointer;
+      opacity: 0.5;
+    }
+
+    /* Timer */
+    .timer {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: rgba(0,0,0,0.1);
+      padding: 10px 15px;
+      border-radius: 20px;
+      font-size: 1rem;
+      color: #666;
+    }
+
+    /* Hidden state */
+    .hidden {
+      display: none !important;
+    }
+
+    /* Celebration overlay */
+    .celebration {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(255,255,255,0.9);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+    }
+
+    .celebration-text {
+      font-size: 3rem;
+      font-weight: 900;
+      color: #FF6B9D;
+      animation: celebrate 0.5s ease-in-out infinite alternate;
+    }
+
+    .celebration-emoji {
+      font-size: 6rem;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes celebrate {
+      from { transform: scale(1) rotate(-5deg); }
+      to { transform: scale(1.1) rotate(5deg); }
+    }
+
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    /* Confetti */
+    .confetti {
+      position: fixed;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      animation: fall 3s linear forwards;
+    }
+
+    @keyframes fall {
+      to {
+        transform: translateY(100vh) rotate(720deg);
+        opacity: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="header">
+      <div class="title">TinyTalk</div>
+    </div>
+
+    <div class="mascot-container">
+      <div class="mascot" id="mascot">🐻</div>
+    </div>
+
+    <div class="word-display" id="wordDisplay">
+      <div class="word-label">Say this word:</div>
+      <div class="current-word" id="currentWord">BALL</div>
+      <div class="word-emoji" id="wordEmoji">⚽</div>
+    </div>
+
+    <div class="status-message" id="statusMessage">
+      Tap the button to talk!
+    </div>
+
+    <button class="talk-button ready" id="talkButton" onclick="toggleTalk()">
+      🎤
+    </button>
+
+    <div class="stars-container" id="stars">
+      <span class="star">⭐</span>
+      <span class="star">⭐</span>
+      <span class="star">⭐</span>
+      <span class="star">⭐</span>
+      <span class="star">⭐</span>
+    </div>
+
+    <div class="mode-buttons">
+      <button class="mode-btn active" onclick="setMode('words')">📚 Words</button>
+      <button class="mode-btn" onclick="setMode('chat')">💬 Chat</button>
+      <button class="mode-btn" onclick="setMode('songs')">🎵 Songs</button>
+    </div>
+  </div>
+
+  <div class="timer" id="timer">5:00</div>
+  <button class="settings-btn" onclick="openSettings()">⚙️</button>
+
+  <div class="celebration hidden" id="celebration">
+    <div class="celebration-emoji">🎉</div>
+    <div class="celebration-text">YAY!</div>
+  </div>
+
+  <script>
+    // App State
+    let state = {
+      mode: 'words',
+      isConnected: false,
+      isListening: false,
+      isSpeaking: false,
+      stars: 0,
+      maxStars: 5,
+      sessionDuration: 300, // 5 minutes
+      timeRemaining: 300,
+      currentWord: null,
+      wordIndex: 0,
+      voice: 'Aoede',
+      wordCategory: 'animals'
+    };
+
+    // Word lists with emojis
+    const WORDS = {
+      animals: [
+        { word: 'DOG', emoji: '🐕' },
+        { word: 'CAT', emoji: '🐱' },
+        { word: 'COW', emoji: '🐮' },
+        { word: 'PIG', emoji: '🐷' },
+        { word: 'DUCK', emoji: '🦆' },
+        { word: 'FISH', emoji: '🐟' },
+        { word: 'BIRD', emoji: '🐦' },
+        { word: 'BEAR', emoji: '🐻' },
+      ],
+      food: [
+        { word: 'APPLE', emoji: '🍎' },
+        { word: 'BANANA', emoji: '🍌' },
+        { word: 'MILK', emoji: '🥛' },
+        { word: 'COOKIE', emoji: '🍪' },
+        { word: 'BREAD', emoji: '🍞' },
+        { word: 'EGG', emoji: '🥚' },
+        { word: 'JUICE', emoji: '🧃' },
+      ],
+      things: [
+        { word: 'BALL', emoji: '⚽' },
+        { word: 'BOOK', emoji: '📖' },
+        { word: 'CAR', emoji: '🚗' },
+        { word: 'SHOE', emoji: '👟' },
+        { word: 'CUP', emoji: '🥤' },
+        { word: 'TOY', emoji: '🧸' },
+        { word: 'BED', emoji: '🛏️' },
+      ],
+      colors: [
+        { word: 'RED', emoji: '🔴' },
+        { word: 'BLUE', emoji: '🔵' },
+        { word: 'YELLOW', emoji: '🟡' },
+        { word: 'GREEN', emoji: '🟢' },
+      ]
+    };
+
+    // DOM Elements
+    const mascot = document.getElementById('mascot');
+    const talkButton = document.getElementById('talkButton');
+    const statusMessage = document.getElementById('statusMessage');
+    const currentWordEl = document.getElementById('currentWord');
+    const wordEmoji = document.getElementById('wordEmoji');
+    const wordDisplay = document.getElementById('wordDisplay');
+    const starsEl = document.getElementById('stars');
+    const timerEl = document.getElementById('timer');
+    const celebration = document.getElementById('celebration');
+
+    // Audio context and WebSocket
+    let audioContext, mediaStream, processor, websocket;
+    let playbackCtx = null;
+    let scheduledTime = 0;
+    const BUFFER_AHEAD = 0.1;
+
+    // Initialize
+    function init() {
+      loadSettings();
+      updateWordDisplay();
+      updateStars();
+      updateTimer();
+
+      // Load saved API key for direct connection (dev mode)
+      const savedKey = localStorage.getItem('gemini_api_key');
+      if (savedKey) {
+        state.apiKey = savedKey;
+      }
+    }
+
+    function loadSettings() {
+      const saved = localStorage.getItem('tinytalk_settings');
+      if (saved) {
+        const settings = JSON.parse(saved);
+        state.sessionDuration = settings.duration || 300;
+        state.timeRemaining = state.sessionDuration;
+        state.voice = settings.voice || 'Aoede';
+        state.wordCategory = settings.category || 'animals';
+      }
+    }
+
+    function setMode(mode) {
+      state.mode = mode;
+      document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
+      event.target.classList.add('active');
+
+      if (mode === 'words') {
+        wordDisplay.classList.remove('hidden');
+        updateWordDisplay();
+        statusMessage.textContent = 'Say the word!';
+      } else if (mode === 'chat') {
+        wordDisplay.classList.add('hidden');
+        statusMessage.textContent = 'Let\'s chat!';
+      } else if (mode === 'songs') {
+        wordDisplay.classList.add('hidden');
+        statusMessage.textContent = 'Let\'s sing!';
+      }
+    }
+
+    function updateWordDisplay() {
+      const words = WORDS[state.wordCategory] || WORDS.animals;
+      state.currentWord = words[state.wordIndex % words.length];
+      currentWordEl.textContent = state.currentWord.word;
+      wordEmoji.textContent = state.currentWord.emoji;
+    }
+
+    function nextWord() {
+      state.wordIndex++;
+      updateWordDisplay();
+    }
+
+    function updateStars() {
+      const starEls = starsEl.querySelectorAll('.star');
+      starEls.forEach((star, i) => {
+        if (i < state.stars) {
+          star.classList.add('earned');
+        } else {
+          star.classList.remove('earned');
+        }
+      });
+    }
+
+    function addStar() {
+      if (state.stars < state.maxStars) {
+        state.stars++;
+        updateStars();
+
+        if (state.stars === state.maxStars) {
+          celebrate();
+        }
+      }
+    }
+
+    function celebrate() {
+      celebration.classList.remove('hidden');
+
+      // Create confetti
+      for (let i = 0; i < 30; i++) {
+        const confetti = document.createElement('div');
+        confetti.className = 'confetti';
+        confetti.style.left = Math.random() * 100 + 'vw';
+        confetti.style.top = '-20px';
+        confetti.style.background = ['#FF6B9D', '#4DA6FF', '#98FB98', '#FFD700', '#FF6347'][Math.floor(Math.random() * 5)];
+        confetti.style.animationDelay = Math.random() * 2 + 's';
+        document.body.appendChild(confetti);
+
+        setTimeout(() => confetti.remove(), 3000);
+      }
+
+      setTimeout(() => {
+        celebration.classList.add('hidden');
+        state.stars = 0;
+        updateStars();
+      }, 3000);
+    }
+
+    function updateTimer() {
+      const mins = Math.floor(state.timeRemaining / 60);
+      const secs = state.timeRemaining % 60;
+      timerEl.textContent = `${mins}:${secs.toString().padStart(2, '0')}`;
+    }
+
+    // Toggle talk button
+    async function toggleTalk() {
+      if (state.isListening) {
+        stopListening();
+      } else {
+        await startListening();
+      }
+    }
+
+    async function startListening() {
+      // Check for API key
+      if (!state.apiKey) {
+        const key = prompt('Enter your Gemini API key:');
+        if (!key) return;
+        state.apiKey = key;
+        localStorage.setItem('gemini_api_key', key);
+      }
+
+      try {
+        state.isListening = true;
+        updateUI();
+
+        // Get microphone
+        mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        audioContext = new AudioContext({ sampleRate: 16000 });
+
+        // Connect to Gemini
+        const model = 'gemini-2.5-flash-native-audio-preview-12-2025';
+        const wsUrl = `wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1alpha.GenerativeService.BidiGenerateContent?key=${state.apiKey}`;
+
+        websocket = new WebSocket(wsUrl);
+
+        websocket.onopen = () => {
+          state.isConnected = true;
+          statusMessage.textContent = 'Listening...';
+
+          // Get system prompt based on mode
+          let systemPrompt = getSystemPrompt();
+
+          const setupMsg = {
+            setup: {
+              model: `models/${model}`,
+              generation_config: {
+                response_modalities: ['AUDIO'],
+                speech_config: {
+                  voice_config: {
+                    prebuilt_voice_config: {
+                      voice_name: state.voice
+                    }
+                  }
+                }
+              },
+              system_instruction: {
+                parts: [{ text: systemPrompt }]
+              }
+            }
+          };
+          websocket.send(JSON.stringify(setupMsg));
+          startAudioCapture();
+        };
+
+        websocket.onmessage = async (event) => {
+          try {
+            let data;
+            if (event.data instanceof Blob) {
+              const text = await event.data.text();
+              data = JSON.parse(text);
+            } else {
+              data = JSON.parse(event.data);
+            }
+
+            if (data.setupComplete) {
+              statusMessage.textContent = 'I\'m listening! Talk to me!';
+            }
+
+            if (data.serverContent?.modelTurn?.parts) {
+              state.isSpeaking = true;
+              mascot.classList.add('talking');
+              mascot.classList.remove('listening');
+              talkButton.classList.remove('listening');
+              talkButton.classList.add('speaking');
+              talkButton.textContent = '🔊';
+
+              for (const part of data.serverContent.modelTurn.parts) {
+                if (part.inlineData?.data) {
+                  await playAudio(part.inlineData.data);
+                }
+              }
+            }
+
+            if (data.serverContent?.turnComplete) {
+              state.isSpeaking = false;
+              mascot.classList.remove('talking');
+              if (state.isListening) {
+                mascot.classList.add('listening');
+                talkButton.classList.add('listening');
+                talkButton.classList.remove('speaking');
+                talkButton.textContent = '🎤';
+              }
+
+              // In word mode, award a star after each exchange
+              if (state.mode === 'words') {
+                addStar();
+                nextWord();
+              }
+            }
+          } catch (err) {
+            console.error('Message error:', err);
+          }
+        };
+
+        websocket.onerror = (error) => {
+          console.error('WebSocket error:', error);
+          statusMessage.textContent = 'Oops! Try again!';
+          stopListening();
+        };
+
+        websocket.onclose = () => {
+          stopListening();
+        };
+
+      } catch (error) {
+        console.error('Error:', error);
+        statusMessage.textContent = 'Need microphone permission!';
+        state.isListening = false;
+        updateUI();
+      }
+    }
+
+    function getSystemPrompt() {
+      const basePrompt = `You are TinyTalk, a friendly speech teacher for toddlers ages 2-4.
+
+RULES:
+- Use very simple words (1-2 syllables)
+- Speak slowly and clearly
+- Keep responses under 15 words
+- Use lots of praise: "Great job!", "Wow!", "You did it!"
+- Never scold or criticize
+- Be patient and encouraging
+
+`;
+
+      if (state.mode === 'words') {
+        return basePrompt + `WORD TEACHING MODE:
+You are teaching the word "${state.currentWord?.word || 'BALL'}".
+1. Say "Can you say ${state.currentWord?.word || 'BALL'}? ${state.currentWord?.word || 'BALL'}. ${state.currentWord?.word || 'BALL'}."
+2. Wait for child to try
+3. Praise ANY attempt: "I heard you try! Good job!"
+4. Say the word once more cheerfully`;
+      } else if (state.mode === 'songs') {
+        return basePrompt + `SONG MODE:
+Sing simple songs like Twinkle Twinkle or Old MacDonald.
+- Sing slowly with clear words
+- Pause for them to join in
+- Celebrate when they sing along!`;
+      } else {
+        return basePrompt + `CHAT MODE:
+Have a simple conversation.
+- Ask about familiar things: pets, toys, family
+- Keep questions simple: "Do you like dogs?"
+- Expand on what they say`;
+      }
+    }
+
+    function startAudioCapture() {
+      const source = audioContext.createMediaStreamSource(mediaStream);
+      processor = audioContext.createScriptProcessor(4096, 1, 1);
+
+      processor.onaudioprocess = (e) => {
+        if (!state.isListening || websocket?.readyState !== WebSocket.OPEN) return;
+
+        const inputData = e.inputBuffer.getChannelData(0);
+        const pcmData = new Int16Array(inputData.length);
+
+        for (let i = 0; i < inputData.length; i++) {
+          pcmData[i] = Math.max(-32768, Math.min(32767, inputData[i] * 32768));
+        }
+
+        const base64Audio = btoa(String.fromCharCode(...new Uint8Array(pcmData.buffer)));
+
+        websocket.send(JSON.stringify({
+          realtimeInput: {
+            mediaChunks: [{
+              mimeType: 'audio/pcm',
+              data: base64Audio
+            }]
+          }
+        }));
+      };
+
+      source.connect(processor);
+      processor.connect(audioContext.destination);
+    }
+
+    async function playAudio(base64Data) {
+      try {
+        if (!playbackCtx) {
+          playbackCtx = new AudioContext({ sampleRate: 24000 });
+          scheduledTime = playbackCtx.currentTime;
+        }
+
+        const binaryStr = atob(base64Data);
+        const bytes = new Uint8Array(binaryStr.length);
+        for (let i = 0; i < binaryStr.length; i++) {
+          bytes[i] = binaryStr.charCodeAt(i);
+        }
+
+        const validLength = bytes.length - (bytes.length % 2);
+        if (validLength === 0) return;
+
+        const int16Data = new Int16Array(bytes.buffer, 0, validLength / 2);
+        const audioBuffer = playbackCtx.createBuffer(1, int16Data.length, 24000);
+        const channelData = audioBuffer.getChannelData(0);
+
+        for (let i = 0; i < int16Data.length; i++) {
+          channelData[i] = int16Data[i] / 32768.0;
+        }
+
+        const source = playbackCtx.createBufferSource();
+        source.buffer = audioBuffer;
+        source.connect(playbackCtx.destination);
+
+        if (scheduledTime < playbackCtx.currentTime) {
+          scheduledTime = playbackCtx.currentTime + BUFFER_AHEAD;
+        }
+
+        source.start(scheduledTime);
+        scheduledTime += audioBuffer.duration;
+      } catch (err) {
+        console.error('Audio playback error:', err);
+      }
+    }
+
+    function stopListening() {
+      state.isListening = false;
+      state.isConnected = false;
+      state.isSpeaking = false;
+
+      if (websocket) {
+        websocket.close();
+        websocket = null;
+      }
+
+      if (processor) {
+        processor.disconnect();
+        processor = null;
+      }
+
+      if (mediaStream) {
+        mediaStream.getTracks().forEach(track => track.stop());
+        mediaStream = null;
+      }
+
+      if (audioContext) {
+        audioContext.close();
+        audioContext = null;
+      }
+
+      if (playbackCtx) {
+        playbackCtx.close();
+        playbackCtx = null;
+      }
+
+      scheduledTime = 0;
+      updateUI();
+    }
+
+    function updateUI() {
+      mascot.classList.remove('talking', 'listening');
+      talkButton.classList.remove('listening', 'speaking');
+
+      if (state.isListening) {
+        mascot.classList.add('listening');
+        talkButton.classList.add('listening');
+        talkButton.textContent = '🎤';
+        statusMessage.textContent = 'Listening...';
+      } else {
+        talkButton.classList.add('ready');
+        talkButton.textContent = '🎤';
+        statusMessage.textContent = 'Tap the button to talk!';
+      }
+    }
+
+    function openSettings() {
+      window.location.href = '/parent';
+    }
+
+    // Timer countdown
+    setInterval(() => {
+      if (state.isListening && state.timeRemaining > 0) {
+        state.timeRemaining--;
+        updateTimer();
+
+        if (state.timeRemaining === 0) {
+          statusMessage.textContent = 'Time to take a break!';
+          stopListening();
+        }
+      }
+    }, 1000);
+
+    // Initialize app
+    init();
+  </script>
+</body>
+</html>
