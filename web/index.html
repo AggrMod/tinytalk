@@ -411,10 +411,11 @@
     const celebration = document.getElementById('celebration');
 
     // Audio context and WebSocket
-    let audioContext, mediaStream, processor, websocket;
+    let audioContext, mediaStream, workletNode, websocket;
     let playbackCtx = null;
     let scheduledTime = 0;
     const BUFFER_AHEAD = 0.1;
+    let audioWorkletSupported = true;
 
     // Initialize
     function init() {
@@ -544,9 +545,22 @@
         state.isListening = true;
         updateUI();
 
-        // Get microphone
-        mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        audioContext = new AudioContext({ sampleRate: 16000 });
+        // Get microphone first (requires user gesture)
+        mediaStream = await navigator.mediaDevices.getUserMedia({
+          audio: {
+            echoCancellation: true,
+            noiseSuppression: true,
+            sampleRate: 16000
+          }
+        });
+
+        // Create AudioContext after user gesture (required for mobile)
+        audioContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 16000 });
+
+        // Resume audio context if suspended (mobile browsers)
+        if (audioContext.state === 'suspended') {
+          await audioContext.resume();
+        }
 
         // Connect to Gemini
         const model = 'gemini-2.5-flash-native-audio-preview-12-2025';
@@ -639,14 +653,27 @@
           stopListening();
         };
 
-        websocket.onclose = () => {
-          stopListening();
+        websocket.onclose = (event) => {
+          console.log('WebSocket closed:', event.code, event.reason);
+          if (state.isListening) {
+            stopListening();
+          }
         };
 
       } catch (error) {
-        console.error('Error:', error);
-        statusMessage.textContent = 'Emily needs microphone permission!';
+        console.error('Error starting:', error);
+        // Better error messages for common issues
+        if (error.name === 'NotAllowedError') {
+          statusMessage.textContent = 'Emily needs microphone permission!';
+        } else if (error.name === 'NotFoundError') {
+          statusMessage.textContent = 'No microphone found!';
+        } else if (error.message?.includes('API key')) {
+          statusMessage.textContent = 'Check API key in settings!';
+        } else {
+          statusMessage.textContent = 'Oops! Try again Emily!';
+        }
         state.isListening = false;
+        stopListening();
         updateUI();
       }
     }
@@ -697,9 +724,75 @@ Have a simple conversation with ${childName}.
       }
     }
 
-    function startAudioCapture() {
-      const source = audioContext.createMediaStreamSource(mediaStream);
-      processor = audioContext.createScriptProcessor(4096, 1, 1);
+    async function startAudioCapture() {
+      try {
+        const source = audioContext.createMediaStreamSource(mediaStream);
+
+        // Try AudioWorklet first (modern approach), fallback to ScriptProcessor
+        if (window.AudioWorkletNode && audioWorkletSupported) {
+          try {
+            // Create inline worklet processor
+            const workletCode = `
+              class PCMProcessor extends AudioWorkletProcessor {
+                constructor() {
+                  super();
+                  this.buffer = [];
+                }
+                process(inputs, outputs, parameters) {
+                  const input = inputs[0];
+                  if (input && input[0]) {
+                    const samples = input[0];
+                    const pcmData = new Int16Array(samples.length);
+                    for (let i = 0; i < samples.length; i++) {
+                      pcmData[i] = Math.max(-32768, Math.min(32767, samples[i] * 32768));
+                    }
+                    this.port.postMessage(pcmData.buffer, [pcmData.buffer]);
+                  }
+                  return true;
+                }
+              }
+              registerProcessor('pcm-processor', PCMProcessor);
+            `;
+            const blob = new Blob([workletCode], { type: 'application/javascript' });
+            const workletUrl = URL.createObjectURL(blob);
+            await audioContext.audioWorklet.addModule(workletUrl);
+            URL.revokeObjectURL(workletUrl);
+
+            workletNode = new AudioWorkletNode(audioContext, 'pcm-processor');
+            workletNode.port.onmessage = (e) => {
+              if (!state.isListening || websocket?.readyState !== WebSocket.OPEN) return;
+              const pcmData = new Int16Array(e.data);
+              const base64Audio = arrayBufferToBase64(pcmData.buffer);
+              websocket.send(JSON.stringify({
+                realtimeInput: {
+                  mediaChunks: [{
+                    mimeType: 'audio/pcm',
+                    data: base64Audio
+                  }]
+                }
+              }));
+            };
+            source.connect(workletNode);
+            workletNode.connect(audioContext.destination);
+            console.log('Using AudioWorklet for audio capture');
+          } catch (workletError) {
+            console.warn('AudioWorklet failed, using fallback:', workletError);
+            audioWorkletSupported = false;
+            setupScriptProcessor(source);
+          }
+        } else {
+          setupScriptProcessor(source);
+        }
+      } catch (err) {
+        console.error('Audio capture setup error:', err);
+        statusMessage.textContent = 'Audio error. Try again!';
+        stopListening();
+      }
+    }
+
+    function setupScriptProcessor(source) {
+      // Fallback to ScriptProcessor (deprecated but wider support)
+      const processor = audioContext.createScriptProcessor(4096, 1, 1);
 
       processor.onaudioprocess = (e) => {
         if (!state.isListening || websocket?.readyState !== WebSocket.OPEN) return;
@@ -711,7 +804,7 @@ Have a simple conversation with ${childName}.
           pcmData[i] = Math.max(-32768, Math.min(32767, inputData[i] * 32768));
         }
 
-        const base64Audio = btoa(String.fromCharCode(...new Uint8Array(pcmData.buffer)));
+        const base64Audio = arrayBufferToBase64(pcmData.buffer);
 
         websocket.send(JSON.stringify({
           realtimeInput: {
@@ -725,13 +818,32 @@ Have a simple conversation with ${childName}.
 
       source.connect(processor);
       processor.connect(audioContext.destination);
+      workletNode = processor; // Store reference for cleanup
+      console.log('Using ScriptProcessor for audio capture (fallback)');
+    }
+
+    // Helper function for base64 encoding (more memory efficient)
+    function arrayBufferToBase64(buffer) {
+      const bytes = new Uint8Array(buffer);
+      let binary = '';
+      const chunkSize = 8192;
+      for (let i = 0; i < bytes.length; i += chunkSize) {
+        const chunk = bytes.subarray(i, i + chunkSize);
+        binary += String.fromCharCode.apply(null, chunk);
+      }
+      return btoa(binary);
     }
 
     async function playAudio(base64Data) {
       try {
         if (!playbackCtx) {
-          playbackCtx = new AudioContext({ sampleRate: 24000 });
+          playbackCtx = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 24000 });
           scheduledTime = playbackCtx.currentTime;
+        }
+
+        // Resume if suspended (mobile browsers)
+        if (playbackCtx.state === 'suspended') {
+          await playbackCtx.resume();
         }
 
         const binaryStr = atob(base64Data);
@@ -776,9 +888,9 @@ Have a simple conversation with ${childName}.
         websocket = null;
       }
 
-      if (processor) {
-        processor.disconnect();
-        processor = null;
+      if (workletNode) {
+        workletNode.disconnect();
+        workletNode = null;
       }
 
       if (mediaStream) {
