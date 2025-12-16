@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>TinyTalk - Learn to Talk!</title>
+  <title>TinyTalk - Emily's Learning App!</title>
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -300,7 +300,7 @@
 <body>
   <div class="app">
     <div class="header">
-      <div class="title">TinyTalk</div>
+      <div class="title">Emily's TinyTalk</div>
     </div>
 
     <div class="mascot-container">
@@ -308,13 +308,13 @@
     </div>
 
     <div class="word-display" id="wordDisplay">
-      <div class="word-label">Say this word:</div>
-      <div class="current-word" id="currentWord">BALL</div>
-      <div class="word-emoji" id="wordEmoji">⚽</div>
+      <div class="word-label">Emily, say this word:</div>
+      <div class="current-word" id="currentWord">DOG</div>
+      <div class="word-emoji" id="wordEmoji">🐕</div>
     </div>
 
     <div class="status-message" id="statusMessage">
-      Tap the button to talk!
+      Emily, tap the button to talk!
     </div>
 
     <button class="talk-button ready" id="talkButton" onclick="toggleTalk()">
@@ -341,7 +341,7 @@
 
   <div class="celebration hidden" id="celebration">
     <div class="celebration-emoji">🎉</div>
-    <div class="celebration-text">YAY!</div>
+    <div class="celebration-text">YAY EMILY!</div>
   </div>
 
   <script>
@@ -449,13 +449,13 @@
       if (mode === 'words') {
         wordDisplay.classList.remove('hidden');
         updateWordDisplay();
-        statusMessage.textContent = 'Say the word!';
+        statusMessage.textContent = 'Emily, say the word!';
       } else if (mode === 'chat') {
         wordDisplay.classList.add('hidden');
-        statusMessage.textContent = 'Let\'s chat!';
+        statusMessage.textContent = 'Emily, let\'s chat!';
       } else if (mode === 'songs') {
         wordDisplay.classList.add('hidden');
-        statusMessage.textContent = 'Let\'s sing!';
+        statusMessage.textContent = 'Emily, let\'s sing!';
       }
     }
 
@@ -594,7 +594,7 @@
             }
 
             if (data.setupComplete) {
-              statusMessage.textContent = 'I\'m listening! Talk to me!';
+              statusMessage.textContent = 'Emily, I\'m listening!';
             }
 
             if (data.serverContent?.modelTurn?.parts) {
@@ -635,7 +635,7 @@
 
         websocket.onerror = (error) => {
           console.error('WebSocket error:', error);
-          statusMessage.textContent = 'Oops! Try again!';
+          statusMessage.textContent = 'Oops Emily! Try again!';
           stopListening();
         };
 
@@ -645,44 +645,55 @@
 
       } catch (error) {
         console.error('Error:', error);
-        statusMessage.textContent = 'Need microphone permission!';
+        statusMessage.textContent = 'Emily needs microphone permission!';
         state.isListening = false;
         updateUI();
       }
     }
 
     function getSystemPrompt() {
-      const basePrompt = `You are TinyTalk, a friendly speech teacher for toddlers ages 2-4.
+      const childName = 'Emily';
+      const basePrompt = `You are TinyTalk, a friendly speech teacher helping ${childName} learn to talk.
+
+CRITICAL - USE HER NAME:
+- Say "${childName}" frequently in every response
+- Examples: "Great job ${childName}!", "Can you say it ${childName}?", "Wow ${childName}!"
+- Use her name at least 2-3 times per response
 
 RULES:
 - Use very simple words (1-2 syllables)
 - Speak slowly and clearly
-- Keep responses under 15 words
-- Use lots of praise: "Great job!", "Wow!", "You did it!"
+- Keep responses under 20 words
+- Use lots of praise with her name: "Great job ${childName}!", "Wow ${childName}!", "${childName} did it!"
 - Never scold or criticize
 - Be patient and encouraging
+- Always sound excited and happy
 
 `;
 
       if (state.mode === 'words') {
         return basePrompt + `WORD TEACHING MODE:
-You are teaching the word "${state.currentWord?.word || 'BALL'}".
-1. Say "Can you say ${state.currentWord?.word || 'BALL'}? ${state.currentWord?.word || 'BALL'}. ${state.currentWord?.word || 'BALL'}."
-2. Wait for child to try
-3. Praise ANY attempt: "I heard you try! Good job!"
-4. Say the word once more cheerfully`;
+You are teaching ${childName} the word "${state.currentWord?.word || 'BALL'}".
+1. Say "${childName}! Can you say ${state.currentWord?.word || 'BALL'}? ${state.currentWord?.word || 'BALL'}. Say it ${childName}!"
+2. Wait for ${childName} to try
+3. Praise her attempt: "I heard you ${childName}! Good job!"
+4. Say "Yay ${childName}! ${state.currentWord?.word || 'BALL'}!"`;
       } else if (state.mode === 'songs') {
         return basePrompt + `SONG MODE:
-Sing simple songs like Twinkle Twinkle or Old MacDonald.
+Sing simple songs with ${childName}.
+- Start with "${childName}, let's sing together!"
+- Sing Twinkle Twinkle, Old MacDonald, or Wheels on the Bus
 - Sing slowly with clear words
-- Pause for them to join in
-- Celebrate when they sing along!`;
+- Say "${childName}, sing with me!" between verses
+- Celebrate: "Yay ${childName}! You're singing!"`;
       } else {
         return basePrompt + `CHAT MODE:
-Have a simple conversation.
-- Ask about familiar things: pets, toys, family
-- Keep questions simple: "Do you like dogs?"
-- Expand on what they say`;
+Have a simple conversation with ${childName}.
+- Start with "Hi ${childName}! How are you?"
+- Ask about her things: "${childName}, do you have a doggy?"
+- Use her name in every response
+- Keep questions simple
+- Say things like "${childName}, that's so cool!" and "Tell me more ${childName}!"`;
       }
     }
 
@@ -797,11 +808,11 @@ Have a simple conversation.
         mascot.classList.add('listening');
         talkButton.classList.add('listening');
         talkButton.textContent = '🎤';
-        statusMessage.textContent = 'Listening...';
+        statusMessage.textContent = 'Listening to Emily...';
       } else {
         talkButton.classList.add('ready');
         talkButton.textContent = '🎤';
-        statusMessage.textContent = 'Tap the button to talk!';
+        statusMessage.textContent = 'Emily, tap the button to talk!';
       }
     }
 
@@ -816,7 +827,7 @@ Have a simple conversation.
         updateTimer();
 
         if (state.timeRemaining === 0) {
-          statusMessage.textContent = 'Time to take a break!';
+          statusMessage.textContent = 'Great job Emily! Time for a break!';
           stopListening();
         }
       }
