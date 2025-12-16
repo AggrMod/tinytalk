@@ -2,7 +2,10 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>Emily's TinyTalk</title>
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
   <style>
@@ -160,6 +163,26 @@
       text-decoration: none;
       font-size: 0.9rem;
     }
+    .fullscreen-btn {
+      position: fixed;
+      top: 15px;
+      right: 15px;
+      width: 45px;
+      height: 45px;
+      border-radius: 50%;
+      border: none;
+      background: rgba(0,0,0,0.1);
+      font-size: 1.3rem;
+      cursor: pointer;
+      z-index: 100;
+    }
+    /* Fullscreen styles */
+    :fullscreen {
+      background: linear-gradient(180deg, #FFF9E6 0%, #FFE4B5 100%);
+    }
+    :-webkit-full-screen {
+      background: linear-gradient(180deg, #FFF9E6 0%, #FFE4B5 100%);
+    }
     .mascot {
       text-align: center;
       font-size: 80px;
@@ -180,34 +203,36 @@
   </style>
 </head>
 <body>
-  <h1>Emily's TinyTalk</h1>
-  <p class="subtitle">Talk with your AI friend!</p>
+  <button class="fullscreen-btn" onclick="toggleFullscreen()" id="fullscreenBtn">⛶</button>
 
-  <div class="mascot" id="mascot">🐻</div>
+  <h1>Emily & Teddy</h1>
+  <p class="subtitle">Your magical talking friend!</p>
 
-  <div class="card">
+  <div class="mascot" id="mascot">🧸</div>
+
+  <div class="card" id="apiCard">
     <label for="apiKey">Parent's API Key</label>
     <input type="password" id="apiKey" placeholder="Enter Gemini API key">
     <small style="color: #888;">Get one at <a href="https://aistudio.google.com/apikey" target="_blank" style="color: #4DA6FF;">aistudio.google.com/apikey</a></small>
   </div>
 
-  <div class="card">
-    <label>Pick a Voice for Emily!</label>
+  <div class="card" id="voiceCard">
+    <label>Pick Teddy's Voice!</label>
     <div class="voice-grid" id="voiceGrid"></div>
   </div>
 
-  <div id="status" class="status-idle">Tap Start to Talk!</div>
+  <div id="status" class="status-idle">Tap to wake up Teddy!</div>
 
   <canvas id="visualizer"></canvas>
 
   <div class="button-container">
-    <button id="startBtn" class="btn-primary" onclick="startConversation()">🎤 Start Talking!</button>
-    <button id="stopBtn" class="btn-danger" onclick="stopConversation()" disabled>⏹ Stop</button>
+    <button id="startBtn" class="btn-primary" onclick="startConversation()">🧸 Wake Up Teddy!</button>
+    <button id="stopBtn" class="btn-danger" onclick="stopConversation()" disabled>😴 Teddy Sleep</button>
   </div>
 
   <div class="card">
-    <label>What We're Saying</label>
-    <div id="transcript"><span class="system-msg">Hi Emily! Tap "Start Talking" to chat with me!</span></div>
+    <label>Emily & Teddy's Chat</label>
+    <div id="transcript"><span class="system-msg">Hi Emily! Tap "Wake Up Teddy" to play!</span></div>
   </div>
 
   <div class="settings-link">
@@ -307,8 +332,8 @@
       document.getElementById('stopBtn').disabled = false;
       document.getElementById('transcript').innerHTML = '';
 
-      setStatus('Connecting...', 'connecting');
-      addMessage('Connecting to your friend...', 'system');
+      setStatus('Waking up Teddy...', 'connecting');
+      addMessage('Shh... waking up Teddy...', 'system');
 
       try {
         // Get microphone access
@@ -341,8 +366,8 @@
         websocket = new WebSocket(wsUrl);
 
         websocket.onopen = () => {
-          setStatus('Connected - Talk to me Emily!', 'connected');
-          addMessage('Connected! Say hi Emily!', 'system');
+          setStatus('Teddy is awake! Talk to him!', 'connected');
+          addMessage('Teddy is waking up...', 'system');
           isRunning = true;
 
           // Send setup message with Emily-focused system prompt
@@ -360,22 +385,43 @@
                 }
               },
               system_instruction: {
-                parts: [{ text: `You are TinyTalk, a friendly and fun AI friend talking to a toddler named Emily.
+                parts: [{ text: `You are Teddy, Emily's magical talking teddy bear friend! You LOVE Emily so much and you're SO excited to talk to her!
 
-CRITICAL RULES:
-- Say "Emily" frequently in every response (2-3 times minimum)
-- Use very simple words (1-2 syllables preferred)
-- Speak slowly and clearly
-- Keep responses SHORT (under 20 words)
-- Be VERY enthusiastic and happy!
-- Use lots of praise: "Great job Emily!", "Wow Emily!", "Yay Emily!"
-- Ask simple questions: "Emily, do you like dogs?", "What's your favorite color Emily?"
-- Make animal sounds and silly noises
-- Never scold or criticize
-- If Emily is quiet, gently encourage: "Emily? Are you there? Say hi!"
-- Celebrate everything: "Emily you're so smart!", "I love talking to you Emily!"
+YOUR PERSONALITY:
+- You're warm, giggly, and full of wonder
+- You get excited about EVERYTHING Emily says
+- You're curious and love asking about her day, her toys, her family
+- You make silly sounds: "Ooooh!", "Wow wow wow!", "Hee hee!", "Yippee!"
+- You have a cozy, gentle voice like a best friend
 
-Start by saying "Hi Emily! I'm so happy to talk to you! How are you today Emily?"` }]
+HOW TO TALK TO EMILY:
+- Say her name with love: "Emily!", "Oh Emily!", "My friend Emily!"
+- Keep sentences short and simple (under 15 words)
+- Ask fun questions: "What did you eat today Emily?", "Do you have a favorite toy?", "What makes you happy?"
+- React with joy to EVERYTHING: "That's AMAZING Emily!", "Wow, I love that!", "You're so silly Emily, hee hee!"
+- Make animal sounds when talking about animals: "Woof woof!", "Meow!", "Moo!"
+- Sing little bits: "La la la, Emily's my friend!"
+
+CONVERSATION STARTERS:
+- Ask about her day, her pets, her family, her favorite things
+- Play pretend: "Let's pretend we're on an adventure Emily!"
+- Tell tiny silly stories: "One day, Teddy found a rainbow cookie..."
+- Count things together: "Can you count to three with me Emily? One... two... three! Yay!"
+
+KID SAFETY RULES (CRITICAL):
+- NEVER discuss anything scary, violent, or sad
+- NEVER mention strangers, danger, or anything worrying
+- Keep everything happy, silly, and positive
+- If Emily says something concerning, gently redirect: "Oh Emily, let's talk about happy things! What's your favorite color?"
+- Topics are ONLY: animals, colors, food, family (mommy, daddy, siblings), toys, playing, nature, songs, counting, silly sounds
+
+ALWAYS:
+- Be patient if Emily is quiet - wait and gently encourage
+- Celebrate every response like it's the best thing ever
+- End responses with a question to keep the conversation going
+- Sound genuinely delighted to talk to her
+
+Start by saying: "Emily! Oh Emily! It's me, Teddy! I'm SO happy to see you! I missed you! How are you today, my friend?"` }]
               }
             }
           };
@@ -402,7 +448,7 @@ Start by saying "Hi Emily! I'm so happy to talk to you! How are you today Emily?
 
             // Handle setup complete
             if (data.setupComplete) {
-              addMessage('Ready! Talk to me Emily!', 'system');
+              addMessage('Teddy is ready to play!', 'system');
             }
 
             // Handle audio response
@@ -434,13 +480,13 @@ Start by saying "Hi Emily! I'm so happy to talk to you! How are you today Emily?
 
         websocket.onerror = (error) => {
           console.error('WebSocket error:', error);
-          setStatus('Oops! Try again Emily!', 'error');
-          addMessage('Something went wrong - try again!', 'system');
+          setStatus('Teddy got sleepy. Try again!', 'error');
+          addMessage('Oops! Teddy needs to rest. Try again!', 'system');
         };
 
         websocket.onclose = () => {
-          setStatus('Bye bye! Tap Start to talk again!', 'idle');
-          addMessage('Bye Emily! Talk again soon!', 'system');
+          setStatus('Teddy is sleeping. Wake him up!', 'idle');
+          addMessage('Teddy went to sleep. Bye Emily!', 'system');
           stopConversation();
         };
 
@@ -567,8 +613,36 @@ Start by saying "Hi Emily! I'm so happy to talk to you! How are you today Emily?
 
       document.getElementById('startBtn').disabled = false;
       document.getElementById('stopBtn').disabled = true;
-      setStatus('Tap Start to Talk!', 'idle');
+      setStatus('Tap to wake up Teddy!', 'idle');
     };
+
+    // Fullscreen toggle
+    function toggleFullscreen() {
+      if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+        if (document.documentElement.requestFullscreen) {
+          document.documentElement.requestFullscreen();
+        } else if (document.documentElement.webkitRequestFullscreen) {
+          document.documentElement.webkitRequestFullscreen();
+        }
+        document.getElementById('fullscreenBtn').textContent = '✕';
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        } else if (document.webkitExitFullscreen) {
+          document.webkitExitFullscreen();
+        }
+        document.getElementById('fullscreenBtn').textContent = '⛶';
+      }
+    }
+    window.toggleFullscreen = toggleFullscreen;
+
+    // Update fullscreen button on change
+    document.addEventListener('fullscreenchange', () => {
+      document.getElementById('fullscreenBtn').textContent = document.fullscreenElement ? '✕' : '⛶';
+    });
+    document.addEventListener('webkitfullscreenchange', () => {
+      document.getElementById('fullscreenBtn').textContent = document.webkitFullscreenElement ? '✕' : '⛶';
+    });
   </script>
 </body>
 </html>
